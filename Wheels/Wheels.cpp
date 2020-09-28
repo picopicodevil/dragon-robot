@@ -10,7 +10,7 @@ Wheels::Wheels(PinName right_IN1, PinName right_IN2, PinName left_IN1, PinName l
 void Wheels::straight()
 {
     _right_wheel.set_duty_cycle(0.50f);
-    _right_wheel.set_state(State::CW);
+    _right_wheel.set_state(State::CCW);
 
     _left_wheel.set_duty_cycle(0.50f);
     _left_wheel.set_state(State::CW);
@@ -22,7 +22,7 @@ void Wheels::straight()
 void Wheels::back()
 {
     _right_wheel.set_duty_cycle(0.50f);
-    _right_wheel.set_state(State::CCW);
+    _right_wheel.set_state(State::CW);
 
     _left_wheel.set_duty_cycle(0.50f);
     _left_wheel.set_state(State::CCW);
@@ -37,7 +37,7 @@ void Wheels::turn_right()
     _right_wheel.set_state(State::Brake);
 
     _left_wheel.set_duty_cycle(0.50f);
-    _left_wheel.set_state(State::CW);
+    _left_wheel.set_state(State::CCW);
 
     _right_wheel.set();
     _left_wheel.set();
@@ -46,6 +46,30 @@ void Wheels::turn_right()
 void Wheels::turn_left()
 {
     _right_wheel.set_duty_cycle(0.50f);
+    _right_wheel.set_state(State::CCW);
+
+    _left_wheel.set_duty_cycle(0.00f);
+    _left_wheel.set_state(State::Brake);
+
+    _right_wheel.set();
+    _left_wheel.set();
+}
+
+void Wheels::stop()
+{
+    _right_wheel.set_duty_cycle(0.00f);
+    _right_wheel.set_state(State::Free);
+
+    _left_wheel.set_duty_cycle(0.00f);
+    _left_wheel.set_state(State::Free);
+
+    _right_wheel.set();
+    _left_wheel.set();
+}
+
+void Wheels::brake()
+{
+    _right_wheel.set_duty_cycle(0.00f);
     _right_wheel.set_state(State::Brake);
 
     _left_wheel.set_duty_cycle(0.00f);

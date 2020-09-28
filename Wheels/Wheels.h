@@ -20,6 +20,9 @@ public:
     void turn_right();
     void turn_left();
 
+    void stop();
+    void brake();
+
 private:
     TB6643 _right_wheel;
     TB6643 _left_wheel;
