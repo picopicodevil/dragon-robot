@@ -12,8 +12,8 @@ public:
     int set();
 
 private:
-    DigitalOut _IN1;
-    DigitalOut _IN2;
+    PwmOut _IN1;
+    PwmOut _IN2;
 };
 
 #endif
