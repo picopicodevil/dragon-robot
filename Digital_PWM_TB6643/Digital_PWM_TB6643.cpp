@@ -22,7 +22,7 @@ int DP_TB6643::set()
         _IN1 = 0, _IN2 = get_duty_cycle();
         break;
     case State::Brake:
-        _IN1 = 1, _IN2 = 1;
+        _IN1 = 1, _IN2 = 1.0f;
         break;
     default:
         break;
