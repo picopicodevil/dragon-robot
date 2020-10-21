@@ -13,8 +13,8 @@ TB6643 ball_screw_motor(p24, p23);
 
 LineTrace line_trace(p20, p19, p18);
 
-// RN4020 rn4020_in(p9, p10);
-// RN4020 rn4020_out(p13, p14);
+RN4020 rn4020_in(p9, p10);
+RN4020 rn4020_out(p13, p14);
 
 QEI link_encoder(p5, p6, NC, 512, QEI::X4_ENCODING);
 QEI ball_screw_encoder(p7, p8, NC, 512, QEI::X4_ENCODING);
@@ -36,6 +36,18 @@ int main()
 {
     led1 = 1;
     pc.write("RUN\r\n", 5);
+
+    while (1)
+    {
+        if (rn4020_in.readable())
+        {
+            char input;
+            rn4020_in.read(&input, 1);
+
+            if (input == 0x50)
+                break;
+        }
+    }
 
     int preview_limit_sw_state = 0;
 
