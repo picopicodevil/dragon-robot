@@ -61,16 +61,12 @@ int set_wheel()
     DP_TB6643 wheel_left(p27, p21);
 
     LineTrace line_trace(p20, p19, p18);
+    line_trace.set_base_color(Color::White);
     int value = line_trace.read();
 
     switch (value)
     {
     case 0:
-        wheel_right.set_duty_cycle(0.00f);
-        wheel_right.set_state(State::Brake);
-
-        wheel_left.set_duty_cycle(0.00f);
-        wheel_left.set_state(State::Brake);
         break;
     case 1:
         wheel_right.set_duty_cycle(0.50f);
