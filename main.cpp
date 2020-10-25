@@ -100,7 +100,6 @@ void link()
 
     DigitalOut led(LED2);
 
-
     Timer timer;
     timer.start();
 
@@ -119,7 +118,7 @@ void link()
 
             if (elapsed_time < (cycle_time + reserve_time))
             {
-                motor.set_duty_cycle(0.0f);
+                motor.set_duty_cycle(0.00f);
                 motor.set_state(State::Brake);
                 motor.set();
             }
@@ -156,7 +155,6 @@ void ball_screw()
 
     DigitalOut led(LED3);
 
-
     Timer timer;
     timer.start();
 
@@ -184,7 +182,7 @@ void ball_screw()
             else
             {
                 is_rise = true;
-                
+
                 motor.set_duty_cycle(0.95f);
                 motor.set_state(State::CW);
                 motor.set();
