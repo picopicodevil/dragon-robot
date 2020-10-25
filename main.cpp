@@ -110,7 +110,7 @@ void link()
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
 
-        printf("%d\r", (int)elapsed_time);
+        // printf("%d\r", (int)elapsed_time);
 
         if (sw == 1)
         {
@@ -167,7 +167,7 @@ void ball_screw()
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
 
-        // printf("%d %d\r", (int)elapsed_time, (int)encoder.getRevolutions());
+        printf("%d %d   \r", (int)elapsed_time, (int)encoder.getRevolutions());
 
         if (sw == 1)
         {
@@ -184,7 +184,7 @@ void ball_screw()
                 is_rise = true;
 
                 motor.set_duty_cycle(0.95f);
-                motor.set_state(State::CW);
+                motor.set_state(State::CCW);
                 motor.set();
             }
         }
@@ -210,7 +210,7 @@ void ball_screw()
             motor.set();
         }
 
-        if (fabsf(encoder.getRevolutions()) > 15.0f)
+        if (fabsf(encoder.getRevolutions()) > 25.0f)
         {
             encoder.reset();
             is_rise = false;
