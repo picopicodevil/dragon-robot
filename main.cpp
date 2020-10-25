@@ -10,8 +10,6 @@
 
 BufferedSerial pc(USBTX, USBRX, 115200);
 
-DigitalOut led1(LED1);
-DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 DigitalOut led4(LED4);
 
@@ -22,8 +20,8 @@ int set_wheel();
 // main() runs in its own thread in the OS
 int main()
 {
-    led1 = 1;
-    pc.write("RUN\r\n", 5);
+    DigitalOut led(LED1);
+    led = 1;
 
     // while (1)
     // {
@@ -43,6 +41,8 @@ int main()
     link_thread.start(link);
     ball_screw_thread.start(ball_screw);
 
+    ThisThread::sleep_for(100ms);
+
     while (true)
     {
         if (1)
@@ -50,7 +50,7 @@ int main()
             set_wheel();
         }
 
-        led1 = !led1;
+        led = !led;
         ThisThread::sleep_for(10ms);
     }
 }
@@ -98,6 +98,9 @@ void link()
     DigitalIn sw(p12, PullDown);
     QEI encoder(p5, p6, NC, 512, QEI::X4_ENCODING);
 
+    DigitalOut led(LED2);
+
+
     Timer timer;
     timer.start();
 
@@ -108,25 +111,36 @@ void link()
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
 
+        printf("%d\r", (int)elapsed_time);
+
         if (sw == 1)
         {
-            if (elapsed_time > (cycle_time - 2.0f))
+            led = 1;
+
+            if (elapsed_time < (cycle_time + reserve_time))
             {
                 motor.set_duty_cycle(0.0f);
                 motor.set_state(State::Brake);
                 motor.set();
             }
-            else if (elapsed_time > (cycle_time + reserve_time))
+            else
             {
                 motor.set_duty_cycle(0.50f);
-                motor.set_state(State::CW);
+                motor.set_state(State::CCW);
                 motor.set();
             }
         }
         else if (sw == 0)
         {
+            led = 0;
+
+            if (elapsed_time > (cycle_time + reserve_time))
+            {
+                timer.reset();
+            }
+
             motor.set_duty_cycle(0.50f);
-            motor.set_state(State::CW);
+            motor.set_state(State::CCW);
             motor.set();
         }
 
@@ -137,8 +151,11 @@ void link()
 void ball_screw()
 {
     TB6643 motor(p24, p23);
-    DigitalIn sw(p14, PullDown);
-    QEI encoder(p7, p8, NC, 512, QEI::X4_ENCODING);
+    DigitalIn sw(p11, PullDown);
+    QEI encoder(p7, p8, NC, 100, QEI::X4_ENCODING);
+
+    DigitalOut led(LED3);
+
 
     Timer timer;
     timer.start();
@@ -152,47 +169,57 @@ void ball_screw()
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
 
+        // printf("%d %d\r", (int)elapsed_time, (int)encoder.getRevolutions());
+
         if (sw == 1)
         {
             encoder.reset();
-                
-            timer.stop();
 
-            if (elapsed_time > (cycle_time - 2.0f))
+            if (elapsed_time < (cycle_time + reserve_time))
             {
                 motor.set_duty_cycle(0.00f);
                 motor.set_state(State::Brake);
                 motor.set();
             }
-            else if (elapsed_time > (cycle_time + reserve_time))
+            else
             {
                 is_rise = true;
                 
-                timer.reset();
-                timer.start();
-
-                motor.set_duty_cycle(0.50f);
+                motor.set_duty_cycle(0.95f);
                 motor.set_state(State::CW);
                 motor.set();
             }
         }
         else if (is_rise == true)
         {
-            motor.set_duty_cycle(0.50f);
-            motor.set_state(State::CW);
+            if (elapsed_time > (cycle_time + reserve_time))
+            {
+                timer.reset();
+            }
+
+            led = 1;
+
+            motor.set_duty_cycle(0.95f);
+            motor.set_state(State::CCW);
             motor.set();
         }
         else if (is_rise == false)
         {
-            motor.set_duty_cycle(0.50f);
-            motor.set_state(State::CCW);
+            led = 0;
+
+            motor.set_duty_cycle(0.95f);
+            motor.set_state(State::CW);
             motor.set();
         }
 
-        if (encoder.getRevolutions() > 1500.0f)
+        if (fabsf(encoder.getRevolutions()) > 15.0f)
         {
             encoder.reset();
             is_rise = false;
+
+            motor.set_duty_cycle(0.00f);
+            motor.set_state(State::Free);
+            motor.set();
         }
 
         ThisThread::sleep_for(10ms);
