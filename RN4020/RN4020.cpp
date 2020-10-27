@@ -129,7 +129,7 @@ int RN4020::wait_until(const char *string)
                 }
             }
         }
-        ThisThread::sleep_for(100ms);
+        ThisThread::sleep_for(1ms);
     }
     return 0;
 }
