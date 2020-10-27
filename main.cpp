@@ -12,7 +12,7 @@ PS3 dualShock3(p14);
 #else
 RN4020 rn4020_in(p13, p14);
 #endif
-// RN4020 rn4020_out(p9, p10);
+RN4020 rn4020_out(p9, p10);
 
 BufferedSerial pc(USBTX, USBRX, 115200);
 
@@ -31,6 +31,13 @@ int main()
 
     printf("RUN\n");
 
+#if ROBOT_NUMBER != 1
+    rn4020_in.set_mldp_peripheral();
+#endif
+
+    char mac_address[] = "";
+    rn4020_out.set_mldp_central(mac_address);
+
     while (1)
     {
 #if ROBOT_NUMBER == 1
@@ -44,7 +51,7 @@ int main()
             if (circle == 1)
             {
                 char output = 0x80;
-                // rn4020_out.write(&output, 1);
+                rn4020_out.write(&output, 1);
                 break;
             }
         }
@@ -79,15 +86,15 @@ int main()
 #if ROBOT_NUMBER == 1
         if (dualShock3.readable())
         {
-            char data[8];
-            dualShock3.get_data(data);
+            char input[8];
+            dualShock3.get_data(input);
 
             char cross = dualShock3.get_button(PS3::CROSS);
 
             if (cross == 1)
             {
                 char output = 0xC0;
-                // rn4020_out.write(&output, 1);
+                rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
                 NVIC_SystemReset();
                 break;
@@ -102,7 +109,7 @@ int main()
             if (input == 0xC0)
             {
                 char output = 0xC0;
-                // rn4020_out.write(&output, 1);
+                rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
                 NVIC_SystemReset();
                 break;
