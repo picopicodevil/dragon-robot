@@ -104,8 +104,11 @@ int RN4020::wait_until(const char *string)
 {
     int index = 0;
     char buffer[32];
-    // for (int i = 0; i < 100; i++)
-    while(true)
+
+    Timer t;
+    t.start();
+
+    while(std::chrono::duration<float>{t.elapsed_time()}.count() < time_limit)
     {
         if (readable())
         {

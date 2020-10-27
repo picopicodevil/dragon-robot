@@ -25,6 +25,8 @@ class RN4020: public BufferedSerial
 
     int wait_until(const char *string);
     void flush();
+
+    static constexpr float time_limit = 2.0f;
 };
 
 #endif
