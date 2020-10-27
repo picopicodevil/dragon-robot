@@ -57,6 +57,8 @@ public:
     int get_data(char* data_p);
     int get_analog(int analog);
 
+    char get_button(int value);
+
 private:
     
     int i;

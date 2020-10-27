@@ -60,6 +60,16 @@ int PS3::get_data(char* data_p)
     }
 }
 
+char PS3::get_button(int value)
+{
+    if ((0 <= value) && (value < MAX_BUTTON))
+    {
+        return result[value];
+    }
+
+    return -1;
+}
+
 void PS3::reference()
 {
     result[UP]       = (ps3_data[2] & 0x01)?1:0;
