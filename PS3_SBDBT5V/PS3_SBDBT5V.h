@@ -54,9 +54,9 @@ public:
     
     PS3(PinName rx, int baud = 115200);
     
-    int get_data(int* data_p);
+    int get_data(char* data_p);
     int get_analog(int analog);
-    
+
 private:
     
     int i;

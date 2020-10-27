@@ -28,14 +28,17 @@ void PS3::initialization()
 
 }
 
-int PS3::get_data(int* data_p)
+int PS3::get_data(char* data_p)
 {
     j = 0;
     if(readable()) {
         check = 1;
         for(i=0; i<8; i++) {
 #if MBED_MAJOR_VERSION >= 6
-            read(&ps3_data[i], 1);
+            while(!readable());
+            char tmp;
+            read(&tmp, 1);
+            ps3_data[i] = tmp;
 #else
             ps3_data[i] = getc();
 #endif
