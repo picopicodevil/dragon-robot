@@ -35,7 +35,7 @@ int main()
     rn4020_in.set_mldp_peripheral();
 #endif
 
-    char mac_address[] = "";
+    char mac_address[] = "6827190AE562";
     rn4020_out.set_mldp_central(mac_address);
 
     while (1)
