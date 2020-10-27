@@ -1,12 +1,18 @@
 #include "mbed.h"
 #include "TB6643.h"
 #include "Digital_PWM_TB6643.h"
+#include "PS3_SBDBT5V.h"
 #include "RN4020.h"
 #include "QEI.h"
 #include "LineTrace.h"
+#include "UniqueValue.h"
 
-// RN4020 rn4020_in(p9, p10);
-// RN4020 rn4020_out(p13, p14);
+#if ROBOT_NUMBER == 1
+PS3 dualShock3(p14);
+#else
+RN4020 rn4020_in(p13, p14);
+#endif
+// RN4020 rn4020_out(p9, p10);
 
 BufferedSerial pc(USBTX, USBRX, 115200);
 
@@ -15,7 +21,7 @@ DigitalOut led4(LED4);
 
 void link();
 void ball_screw();
-int set_wheel();
+void wheel();
 
 // main() runs in its own thread in the OS
 int main()
@@ -23,73 +29,131 @@ int main()
     DigitalOut led(LED1);
     led = 1;
 
-    // while (1)
-    // {
-    //     if (rn4020_in.readable())
-    //     {
-    //         char input;
-    //         rn4020_in.read(&input, 1);
+    printf("RUN\n");
 
-    //         if (input == 0x50)
-    //             break;
-    //     }
-    // }
+    while (1)
+    {
+#if ROBOT_NUMBER == 1
+        if (dualShock3.readable())
+        {
+            char data[8];
+            dualShock3.get_data(data);
+
+            char circle = dualShock3.get_button(PS3::CIRCLE);
+
+            if (circle == 1)
+            {
+                char output = 0x80;
+                // rn4020_out.write(&output, 1);
+                break;
+            }
+        }
+#else
+        if (rn4020_in.readable())
+        {
+            char input;
+            rn4020_in.read(&input, 1);
+
+            if (input == 0x80)
+                break;
+        }
+#endif
+        led = !led;
+        ThisThread::sleep_for(100ms);
+    }
+
+    debug("Push Circle!\n");
 
     Thread link_thread;
     Thread ball_screw_thread;
+    Thread wheel_thread;
 
     link_thread.start(link);
     ball_screw_thread.start(ball_screw);
+    wheel_thread.start(wheel);
 
     ThisThread::sleep_for(100ms);
 
     while (true)
     {
-        if (1)
+#if ROBOT_NUMBER == 1
+        if (dualShock3.readable())
         {
-            set_wheel();
+            char data[8];
+            dualShock3.get_data(data);
+
+            char cross = dualShock3.get_button(PS3::CROSS);
+
+            if (cross == 1)
+            {
+                char output = 0xC0;
+                // rn4020_out.write(&output, 1);
+                ThisThread::sleep_for(100ms);
+                NVIC_SystemReset();
+                break;
+            }
         }
+#else
+        if (rn4020_in.readable())
+        {
+            char input;
+            rn4020_in.read(&input, 1);
+
+            if (input == 0xC0)
+            {
+                char output = 0xC0;
+                // rn4020_out.write(&output, 1);
+                ThisThread::sleep_for(100ms);
+                NVIC_SystemReset();
+                break;
+            }
+        }
+#endif
 
         led = !led;
-        ThisThread::sleep_for(10ms);
+        ThisThread::sleep_for(100ms);
     }
 }
 
-int set_wheel()
+void wheel()
 {
     DP_TB6643 wheel_right(p28, p22);
     DP_TB6643 wheel_left(p27, p21);
 
     LineTrace line_trace(p20, p19, p18);
     line_trace.set_base_color(Color::White);
-    int value = line_trace.read();
 
-    switch (value)
+    while (1)
     {
-    case 0:
-        break;
-    case 1:
-        wheel_right.set_duty_cycle(0.50f);
-        wheel_right.set_state(State::CCW);
+        int value = line_trace.read();
 
-        wheel_left.set_duty_cycle(0.20f);
-        wheel_left.set_state(State::CCW);
-        break;
-    case 2:
-        wheel_right.set_duty_cycle(0.20f);
-        wheel_right.set_state(State::CCW);
+        switch (value)
+        {
+        case 0:
+            break;
+        case 1:
+            wheel_right.set_duty_cycle(0.50f);
+            wheel_right.set_state(State::CCW);
 
-        wheel_left.set_duty_cycle(0.50f);
-        wheel_left.set_state(State::CCW);
-        break;
-    default:
-        break;
+            wheel_left.set_duty_cycle(0.20f);
+            wheel_left.set_state(State::CCW);
+            break;
+        case 2:
+            wheel_right.set_duty_cycle(0.20f);
+            wheel_right.set_state(State::CCW);
+
+            wheel_left.set_duty_cycle(0.50f);
+            wheel_left.set_state(State::CCW);
+            break;
+        default:
+            break;
+        }
+
+        wheel_right.set();
+        wheel_left.set();
+
+        ThisThread::sleep_for(10ms);
     }
-
-    wheel_right.set();
-    wheel_left.set();
-
-    return value;
 }
 
 void link()
@@ -167,7 +231,7 @@ void ball_screw()
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
 
-        printf("%d %d   \r", (int)elapsed_time, (int)encoder.getRevolutions());
+        // printf("%d %d   \r", (int)elapsed_time, (int)encoder.getRevolutions());
 
         if (sw == 1)
         {
