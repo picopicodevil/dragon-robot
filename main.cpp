@@ -12,7 +12,10 @@ PS3 dualShock3(p14);
 #else
 RN4020 rn4020_in(p13, p14);
 #endif
+
+#if ROBOT_NUMBER != 5
 RN4020 rn4020_out(p9, p10);
+#endif
 
 BufferedSerial pc(USBTX, USBRX, 115200);
 
@@ -37,7 +40,7 @@ int main()
     rn4020_in.set_mldp_peripheral();
 #endif
 
-#if ROBOT_NUMBER !=5
+#if ROBOT_NUMBER != 5
     rn4020_out.set_mldp_central(MAC_ADDRESS);
 #endif
 
@@ -53,7 +56,7 @@ int main()
 
             if (circle == 1)
             {
-#if ROBOT_NUMBER !=5
+#if ROBOT_NUMBER != 5
                 char output = 0x80;
                 rn4020_out.write(&output, 1);
 #endif
@@ -98,7 +101,7 @@ int main()
 
             if (cross == 1)
             {
-#if ROBOT_NUMBER !=5
+#if ROBOT_NUMBER != 5
                 char output = 0xC0;
                 rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
@@ -115,7 +118,7 @@ int main()
 
             if (input == 0xC0)
             {
-#if ROBOT_NUMBER !=5
+#if ROBOT_NUMBER != 5
                 char output = 0xC0;
                 rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
