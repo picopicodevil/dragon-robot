@@ -7,20 +7,7 @@
 #include "LineTrace.h"
 #include "UniqueValue.h"
 
-#if ROBOT_NUMBER == 1
-PS3 dualShock3(p14);
-#else
-RN4020 rn4020_in(p13, p14);
-#endif
-
-#if ROBOT_NUMBER != 5
-RN4020 rn4020_out(p9, p10);
-#endif
-
 BufferedSerial pc(USBTX, USBRX, 115200);
-
-DigitalOut led3(LED3);
-DigitalOut led4(LED4);
 
 void link();
 void ball_screw();
@@ -29,6 +16,16 @@ void wheel();
 // main() runs in its own thread in the OS
 int main()
 {
+#if ROBOT_NUMBER == 1
+    PS3 dualShock3(p14);
+#else
+    RN4020 rn4020_in(p13, p14);
+#endif
+
+#if ROBOT_NUMBER != 5
+    RN4020 rn4020_out(p9, p10);
+#endif
+
     DigitalOut led(LED1);
     led = 1;
 
@@ -101,11 +98,9 @@ int main()
 
             if (cross == 1)
             {
-#if ROBOT_NUMBER != 5
                 char output = 0xC0;
                 rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
-#endif
                 NVIC_SystemReset();
                 break;
             }
