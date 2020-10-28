@@ -57,15 +57,13 @@ public:
     int get_data(char* data_p);
     int get_analog(int analog);
 
-    char get_button(int value);
+    int get_button(int value);
 
 private:
     
-    int i;
-    int j;
     int check;
-    int FREE[8];
-    int ps3_data[8];
+    char FREE[8];
+    char ps3_data[8];
     int result[MAX_BUTTON];
     void initialization();
     void reference();

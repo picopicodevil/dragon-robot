@@ -21,7 +21,7 @@ void PS3::initialization()
     FREE[5] = 0x40;
     FREE[6] = 0x40;
     FREE[7] = 0x00;
-    for(i=0; i<8; i++) {
+    for(int i = 0; i < 8; i++) {
         ps3_data[i] = FREE[i];
     }
     check = 0;
@@ -30,10 +30,10 @@ void PS3::initialization()
 
 int PS3::get_data(char* data_p)
 {
-    j = 0;
+    int free_count = 0;
     if(readable()) {
         check = 1;
-        for(i=0; i<8; i++) {
+        for(int i = 0; i < 8; i++) {
 #if MBED_MAJOR_VERSION >= 6
             while(!readable());
             char tmp;
@@ -43,14 +43,14 @@ int PS3::get_data(char* data_p)
             ps3_data[i] = getc();
 #endif
             if(ps3_data[i] == FREE[i]) {
-                j++;
+                free_count++;
             }
         }
-        if(j == 8) {
+        if(free_count == 8) {
             return -1;
         } else {
             reference();
-            for(i=0; i<MAX_BUTTON; i++) {
+            for(int i = 0; i < 8; i++) {
                 data_p[i] = ps3_data[i];
             }
             return 1;
@@ -60,7 +60,7 @@ int PS3::get_data(char* data_p)
     }
 }
 
-char PS3::get_button(int value)
+int PS3::get_button(int value)
 {
     if ((0 <= value) && (value < MAX_BUTTON))
     {
