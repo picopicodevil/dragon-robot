@@ -5,7 +5,7 @@
 
 void link()
 {
-    TB6643 motor(p26, p25);
+    TB6643 motor(p24, p23);
     DigitalIn sw(p12, PullDown);
     QEI encoder(p5, p6, NC, 512, QEI::X4_ENCODING);
 

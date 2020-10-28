@@ -5,7 +5,7 @@
 
 void ball_screw()
 {
-    TB6643 motor(p24, p23);
+    TB6643 motor(p26, p25);
     DigitalIn sw(p11, PullDown);
     QEI encoder(p7, p8, NC, 100, QEI::X4_ENCODING);
 
