@@ -13,10 +13,18 @@ BufferedSerial pc(USBTX, USBRX, 115200);
 
 void wheel();
 
-int is_receive_start_code(BufferedSerial &input);
+#if ROBOT_NUMBER == 1
+int is_receive_start_code(PS3 &serialInput);
+#else
+int is_receive_start_code(RN4020 &serialInput);
+#endif
 void send_start_code(RN4020 &rn4020_out);
 
-int is_receive_reset_code(BufferedSerial &input);
+#if ROBOT_NUMBER == 1
+int is_receive_reset_code(PS3 &serialInput);
+#else
+int is_receive_reset_code(RN4020 &serialInput);
+#endif
 void send_reset_code(RN4020 &rn4020_out);
 
 // main() runs in its own thread in the OS
@@ -118,21 +126,23 @@ void wheel()
     }
 }
 
-int is_receive_start_code(BufferedSerial &input)
+#if ROBOT_NUMBER == 1
+int is_receive_start_code(PS3 &serialInput)
+#else
+int is_receive_start_code(RN4020 &serialInput)
+#endif
 {
-    if (input.readable())
+    if (serialInput.readable())
     {
 #if ROBOT_NUMBER == 1
         char data[8];
-        input.get_data(data);
+        serialInput.get_data(data);
 
-        char circle = input.get_button(PS3::CIRCLE);
-
-        if (circle == 1)
+        if (serialInput.get_button(PS3::CIRCLE))
             return 1;
 #else
         char data;
-        input.read(&input, 1);
+        serialInput.read(&data, 1);
 
         if (data == 0x80)
             return 1;
@@ -150,19 +160,23 @@ void send_start_code(RN4020 &rn4020_out)
 #endif
 }
 
-int is_receive_reset_code(BufferedSerial &input)
+#if ROBOT_NUMBER == 1
+int is_receive_reset_code(PS3 &serialInput)
+#else
+int is_receive_reset_code(RN4020 &serialInput)
+#endif
 {
-    if (input.readable())
+    if (serialInput.readable())
     {
 #if ROBOT_NUMBER == 1
         char data[8];
-        input.get_data(data);
+        serialInput.get_data(data);
 
-        if (input.get_button(PS3::CROSS))
+        if (serialInput.get_button(PS3::CROSS))
             return 1;
 #else
         char data;
-        input.read(&data, 1);
+        serialInput.read(&data, 1);
 
         if (data == 0xC0)
             return 1;
