@@ -13,76 +13,47 @@ BufferedSerial pc(USBTX, USBRX, 115200);
 
 void wheel();
 
-#if ROBOT_NUMBER == 1
-int is_receive_reset_code(PS3 &dualShock3);
-#else
-int is_receive_reset_code(RN4020 &rn4020_in);
-#endif
+int is_receive_start_code(BufferedSerial &input);
+void send_start_code(RN4020 &rn4020_out);
 
+int is_receive_reset_code(BufferedSerial &input);
 void send_reset_code(RN4020 &rn4020_out);
 
 // main() runs in its own thread in the OS
 int main()
 {
-#if ROBOT_NUMBER == 1
-    PS3 dualShock3(p14);
-#else
-    RN4020 rn4020_in(p13, p14);
-#endif
-
-#if ROBOT_NUMBER != 5
-    RN4020 rn4020_out(p9, p10);
-#endif
-
     DigitalOut led(LED1);
     led = 1;
 
     printf("RUN\n");
 
-    ThisThread::sleep_for(2s); // rn4020のCMD出力を待つ目的で記述
+    ThisThread::sleep_for(2s); // rn4020のCMD出力を待つ
 
-#if ROBOT_NUMBER != 1
-    rn4020_in.set_mldp_peripheral();
+#if ROBOT_NUMBER == 1
+    PS3 serialInput(p14);
+#else
+    RN4020 serialInput(p13, p14);
+    serialInput.set_mldp_peripheral();
 #endif
 
 #if ROBOT_NUMBER != 5
+    RN4020 rn4020_out(p9, p10);
     rn4020_out.set_mldp_central(MAC_ADDRESS);
 #endif
 
     while (1)
     {
-#if ROBOT_NUMBER == 1
-        if (dualShock3.readable())
+        if (is_receive_start_code(serialInput))
         {
-            char data[8];
-            dualShock3.get_data(data);
-
-            char circle = dualShock3.get_button(PS3::CIRCLE);
-
-            if (circle == 1)
-            {
 #if ROBOT_NUMBER != 5
-                char output = 0x80;
-                rn4020_out.write(&output, 1);
+            send_start_code(rn4020_out);
 #endif
-                break;
-            }
+            break;
         }
-#else
-        if (rn4020_in.readable())
-        {
-            char input;
-            rn4020_in.read(&input, 1);
 
-            if (input == 0x80)
-                break;
-        }
-#endif
         led = !led;
         ThisThread::sleep_for(100ms);
     }
-
-    debug("Push Circle!\n");
 
     Thread link_thread;
     Thread ball_screw_thread;
@@ -92,16 +63,10 @@ int main()
     ball_screw_thread.start(ball_screw);
     wheel_thread.start(wheel);
 
-    ThisThread::sleep_for(100ms);
-
     while (true)
     {
-#if ROBOT_NUMBER == 1
-        if (is_receive_reset_code(dualShock3)) {
-#else
-        if (is_receive_reset_code(rn4020_in)) {
-#endif
-
+        if (is_receive_reset_code(serialInput))
+        {
 #if ROBOT_NUMBER != 5
             send_reset_code(rn4020_out);
 #endif
@@ -153,39 +118,58 @@ void wheel()
     }
 }
 
+int is_receive_start_code(BufferedSerial &input)
+{
+    if (input.readable())
+    {
 #if ROBOT_NUMBER == 1
-int is_receive_reset_code(PS3 &dualShock3)
-{
-    if (dualShock3.readable())
-    {
-        char input[8];
-        dualShock3.get_data(input);
+        char data[8];
+        input.get_data(data);
 
-        char cross = dualShock3.get_button(PS3::CROSS);
+        char circle = input.get_button(PS3::CIRCLE);
 
-        if (cross == 1)
-        {
+        if (circle == 1)
             return 1;
-        }
-    }
-    reutrn 0;
-}
 #else
-int is_receive_reset_code(RN4020 &rn4020_in)
-{
-    if (rn4020_in.readable())
-    {
-        char input;
-        rn4020_in.read(&input, 1);
+        char data;
+        input.read(&input, 1);
 
-        if (input == 0xC0)
-        {
+        if (data == 0x80)
             return 1;
-        }
+#endif
     }
     return 0;
 }
+
+void send_start_code(RN4020 &rn4020_out)
+{
+#if ROBOT_NUMBER != 5
+    char output = 0x80;
+    rn4020_out.write(&output, 1);
+    ThisThread::sleep_for(100ms);
 #endif
+}
+
+int is_receive_reset_code(BufferedSerial &input)
+{
+    if (input.readable())
+    {
+#if ROBOT_NUMBER == 1
+        char data[8];
+        input.get_data(data);
+
+        if (input.get_button(PS3::CROSS))
+            return 1;
+#else
+        char data;
+        input.read(&data, 1);
+
+        if (data == 0xC0)
+            return 1;
+#endif
+    }
+    return 0;
+}
 
 void send_reset_code(RN4020 &rn4020_out)
 {
