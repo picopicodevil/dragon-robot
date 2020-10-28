@@ -6,12 +6,20 @@
 #include "QEI.h"
 #include "LineTrace.h"
 #include "UniqueValue.h"
+#include "link.h"
+#include "ball_screw.h"
 
 BufferedSerial pc(USBTX, USBRX, 115200);
 
-void link();
-void ball_screw();
 void wheel();
+
+#if ROBOT_NUMBER == 1
+int is_receive_reset_code(PS3 &dualShock3);
+#else
+int is_receive_reset_code(RN4020 &rn4020_in);
+#endif
+
+void send_reset_code(RN4020 &rn4020_out);
 
 // main() runs in its own thread in the OS
 int main()
@@ -89,41 +97,16 @@ int main()
     while (true)
     {
 #if ROBOT_NUMBER == 1
-        if (dualShock3.readable())
-        {
-            char input[8];
-            dualShock3.get_data(input);
-
-            char cross = dualShock3.get_button(PS3::CROSS);
-
-            if (cross == 1)
-            {
-                char output = 0xC0;
-                rn4020_out.write(&output, 1);
-                ThisThread::sleep_for(100ms);
-                NVIC_SystemReset();
-                break;
-            }
-        }
+        if (is_receive_reset_code(dualShock3)) {
 #else
-        if (rn4020_in.readable())
-        {
-            char input;
-            rn4020_in.read(&input, 1);
+        if (is_receive_reset_code(rn4020_in)) {
+#endif
 
-            if (input == 0xC0)
-            {
 #if ROBOT_NUMBER != 5
-                char output = 0xC0;
-                rn4020_out.write(&output, 1);
-                ThisThread::sleep_for(100ms);
+            send_reset_code(rn4020_out);
 #endif
-                NVIC_SystemReset();
-                break;
-            }
+            NVIC_SystemReset();
         }
-#endif
-
         led = !led;
         ThisThread::sleep_for(100ms);
     }
@@ -170,149 +153,45 @@ void wheel()
     }
 }
 
-void link()
+#if ROBOT_NUMBER == 1
+int is_receive_reset_code(PS3 &dualShock3)
 {
-    TB6643 motor(p26, p25);
-    DigitalIn sw(p12, PullDown);
-    QEI encoder(p5, p6, NC, 512, QEI::X4_ENCODING);
-
-    DigitalOut led(LED2);
-
-    Timer timer;
-    timer.start();
-
-    const float cycle_time = 5.0f;
-    const float reserve_time = 1.0f;
-
-    bool is_push = false;
-
-    while (1)
+    if (dualShock3.readable())
     {
-        float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
+        char input[8];
+        dualShock3.get_data(input);
 
-        // printf("%d\r", (int)elapsed_time);
+        char cross = dualShock3.get_button(PS3::CROSS);
 
-        if (sw == 1)
+        if (cross == 1)
         {
-            led = 1;
-
-            if (elapsed_time < (cycle_time + reserve_time))
-            {
-                is_push = true;
-
-                motor.set_duty_cycle(0.00f);
-                motor.set_state(State::Brake);
-                motor.set();
-            }
-            else
-            {
-                motor.set_duty_cycle(0.50f);
-                motor.set_state(State::CCW);
-                motor.set();
-            }
+            return 1;
         }
-        else if (sw == 0)
-        {
-            led = 0;
-
-            if (elapsed_time > (cycle_time + reserve_time))
-            {
-                is_push = false;
-
-                timer.reset();
-            }
-
-            if (is_push == true)
-            {
-                motor.set_duty_cycle(0.00f);
-                motor.set_state(State::Brake);
-                motor.set();
-            }
-            else
-            {
-                motor.set_duty_cycle(0.50f);
-                motor.set_state(State::CCW);
-                motor.set();
-            }
-        }
-
-        ThisThread::sleep_for(10ms);
     }
+    reutrn 0;
 }
-
-void ball_screw()
+#else
+int is_receive_reset_code(RN4020 &rn4020_in)
 {
-    TB6643 motor(p24, p23);
-    DigitalIn sw(p11, PullDown);
-    QEI encoder(p7, p8, NC, 100, QEI::X4_ENCODING);
-
-    DigitalOut led(LED3);
-
-    Timer timer;
-    timer.start();
-
-    const float cycle_time = 5.0f;
-    const float reserve_time = 1.0f;
-
-    bool is_rise = false;
-
-    while (1)
+    if (rn4020_in.readable())
     {
-        float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
+        char input;
+        rn4020_in.read(&input, 1);
 
-        // printf("%d %d   \r", (int)elapsed_time, (int)encoder.getRevolutions());
-
-        if (sw == 1)
+        if (input == 0xC0)
         {
-            encoder.reset();
-
-            if (elapsed_time < (cycle_time + reserve_time))
-            {
-                motor.set_duty_cycle(0.00f);
-                motor.set_state(State::Brake);
-                motor.set();
-            }
-            else
-            {
-                is_rise = true;
-
-                motor.set_duty_cycle(0.95f);
-                motor.set_state(State::CCW);
-                motor.set();
-            }
+            return 1;
         }
-        else if (is_rise == true)
-        {
-            if (elapsed_time > (cycle_time + reserve_time))
-            {
-                timer.reset();
-            }
-
-            led = 1;
-
-            motor.set_duty_cycle(0.95f);
-            motor.set_state(State::CCW);
-            motor.set();
-        }
-        else if (is_rise == false)
-        {
-            led = 0;
-
-            motor.set_duty_cycle(0.95f);
-            motor.set_state(State::CW);
-            motor.set();
-        }
-
-        if (fabsf(encoder.getRevolutions()) > 25.0f)
-        {
-            encoder.reset();
-            is_rise = false;
-
-            motor.set_duty_cycle(0.00f);
-            motor.set_state(State::Free);
-            motor.set();
-        }
-
-        ThisThread::sleep_for(10ms);
     }
+    return 0;
+}
+#endif
+
+void send_reset_code(RN4020 &rn4020_out)
+{
+#if ROBOT_NUMBER != 5
+    char output = 0xC0;
+    rn4020_out.write(&output, 1);
+    ThisThread::sleep_for(100ms);
+#endif
 }
