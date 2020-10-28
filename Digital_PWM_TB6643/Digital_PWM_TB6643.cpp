@@ -6,6 +6,10 @@ DP_TB6643::DP_TB6643(PinName IN1, PinName IN2)
     : _IN1(IN1), _IN2(IN2)
 {
     _IN2.period(0.0001);
+
+    _duty_cycle = 0.0f;
+    _state = State::Brake;
+    set();
 }
 
 int DP_TB6643::set()
