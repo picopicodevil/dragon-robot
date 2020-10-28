@@ -189,6 +189,8 @@ void link()
     const float cycle_time = 5.0f;
     const float reserve_time = 1.0f;
 
+    bool is_push = false;
+
     while (1)
     {
         float elapsed_time = std::chrono::duration<float>{timer.elapsed_time()}.count();
@@ -201,6 +203,8 @@ void link()
 
             if (elapsed_time < (cycle_time + reserve_time))
             {
+                is_push = true;
+
                 motor.set_duty_cycle(0.00f);
                 motor.set_state(State::Brake);
                 motor.set();
@@ -218,12 +222,23 @@ void link()
 
             if (elapsed_time > (cycle_time + reserve_time))
             {
+                is_push = false;
+
                 timer.reset();
             }
 
-            motor.set_duty_cycle(0.50f);
-            motor.set_state(State::CCW);
-            motor.set();
+            if (is_push == true)
+            {
+                motor.set_duty_cycle(0.00f);
+                motor.set_state(State::Brake);
+                motor.set();
+            }
+            else
+            {
+                motor.set_duty_cycle(0.50f);
+                motor.set_state(State::CCW);
+                motor.set();
+            }
         }
 
         ThisThread::sleep_for(10ms);
