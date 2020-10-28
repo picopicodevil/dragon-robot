@@ -31,12 +31,15 @@ int main()
 
     printf("RUN\n");
 
+    ThisThread::sleep_for(2s); // rn4020のCMD出力を待つ目的で記述
+
 #if ROBOT_NUMBER != 1
     rn4020_in.set_mldp_peripheral();
 #endif
 
-    char mac_address[] = "6827190AE562";
-    rn4020_out.set_mldp_central(mac_address);
+#if ROBOT_NUMBER !=5
+    rn4020_out.set_mldp_central(MAC_ADDRESS);
+#endif
 
     while (1)
     {
@@ -50,8 +53,10 @@ int main()
 
             if (circle == 1)
             {
+#if ROBOT_NUMBER !=5
                 char output = 0x80;
                 rn4020_out.write(&output, 1);
+#endif
                 break;
             }
         }
@@ -93,9 +98,11 @@ int main()
 
             if (cross == 1)
             {
+#if ROBOT_NUMBER !=5
                 char output = 0xC0;
                 rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
+#endif
                 NVIC_SystemReset();
                 break;
             }
@@ -108,9 +115,11 @@ int main()
 
             if (input == 0xC0)
             {
+#if ROBOT_NUMBER !=5
                 char output = 0xC0;
                 rn4020_out.write(&output, 1);
                 ThisThread::sleep_for(100ms);
+#endif
                 NVIC_SystemReset();
                 break;
             }
