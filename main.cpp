@@ -46,7 +46,7 @@ int main()
 
 #if ROBOT_NUMBER != 5
     RN4020 rn4020_out(p9, p10);
-    rn4020_out.set_mldp_central(MAC_ADDRESS);
+    // rn4020_out.set_mldp_central(MAC_ADDRESS);
 #endif
 
     while (1)
@@ -58,17 +58,18 @@ int main()
 #endif
             break;
         }
-
         led = !led;
-        ThisThread::sleep_for(100ms);
+        ThisThread::sleep_for(50ms);
     }
+
+    debug("Start\n");
 
     Thread link_thread;
     Thread ball_screw_thread;
     Thread wheel_thread;
 
     link_thread.start(link);
-    ball_screw_thread.start(ball_screw);
+    // ball_screw_thread.start(ball_screw);
     wheel_thread.start(wheel);
 
     while (true)
@@ -81,7 +82,7 @@ int main()
             NVIC_SystemReset();
         }
         led = !led;
-        ThisThread::sleep_for(100ms);
+        ThisThread::sleep_for(200ms);
     }
 }
 
@@ -93,6 +94,8 @@ void wheel()
     LineTrace line_trace(p20, p19, p18);
     line_trace.set_base_color(Color::White);
 
+    DigitalOut led(LED4);
+
     while (1)
     {
         int value = line_trace.read();
@@ -102,18 +105,22 @@ void wheel()
         case 0:
             break;
         case 1:
-            wheel_right.set_duty_cycle(0.50f);
-            wheel_right.set_state(State::CCW);
-
-            wheel_left.set_duty_cycle(0.20f);
-            wheel_left.set_state(State::CCW);
-            break;
-        case 2:
-            wheel_right.set_duty_cycle(0.20f);
+            wheel_right.set_duty_cycle(0.70f);
             wheel_right.set_state(State::CCW);
 
             wheel_left.set_duty_cycle(0.50f);
             wheel_left.set_state(State::CCW);
+
+            led = 1;
+            break;
+        case 2:
+            wheel_right.set_duty_cycle(0.50f);
+            wheel_right.set_state(State::CCW);
+
+            wheel_left.set_duty_cycle(0.70f);
+            wheel_left.set_state(State::CCW);
+
+            led = 0;
             break;
         default:
             break;
@@ -138,7 +145,7 @@ int is_receive_start_code(RN4020 &serialInput)
         char data[8];
         serialInput.get_data(data);
 
-        if (serialInput.get_button(PS3::CIRCLE))
+        if (serialInput.get_button(PS3::CIRCLE) == 1)
             return 1;
 #else
         char data;
