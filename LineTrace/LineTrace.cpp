@@ -14,21 +14,7 @@ int LineTrace::read()
     _place[TracePosition::Center] = get_place(_center);
     _place[TracePosition::Right] = get_place(_right);
 
-    if ((_place[TracePosition::Left] == Place::Line) &&
-        ((_place[TracePosition::Center] == Place::Line) ||
-        (_place[TracePosition::Right] == Place::Line)))
-    {
-        // 中央と、左右のいずれかがライン上に乗った時（歩留まり向上のため）
-
-        _motor[Left].set_state(State::Brake);
-        _motor[Left].set_duty_cycle(0.00f);
-
-        _motor[Right].set_state(State::Brake);
-        _motor[Right].set_duty_cycle(0.00f);
-
-        return 0;
-    }
-    else if (_place[TracePosition::Center] == Place::Line)
+    if (_place[TracePosition::Center] == Place::Line)
     {
         _motor[Left].set_state(State::CCW);
         _motor[Left].set_duty_cycle(0.50f);
