@@ -39,7 +39,7 @@ void link()
             }
             else
             {
-                motor.set_duty_cycle(0.50f);
+                motor.set_duty_cycle(0.98f);
                 motor.set_state(State::CCW);
                 motor.set();
             }

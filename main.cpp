@@ -105,19 +105,19 @@ void wheel()
         case 0:
             break;
         case 1:
-            wheel_right.set_duty_cycle(0.70f);
+            wheel_right.set_duty_cycle(0.98f);
             wheel_right.set_state(State::CCW);
 
-            wheel_left.set_duty_cycle(0.00f);
+            wheel_left.set_duty_cycle(0.60f);
             wheel_left.set_state(State::CCW);
 
             led = 1;
             break;
         case 2:
-            wheel_right.set_duty_cycle(0.00f);
+            wheel_right.set_duty_cycle(0.60f);
             wheel_right.set_state(State::CCW);
 
-            wheel_left.set_duty_cycle(0.70f);
+            wheel_left.set_duty_cycle(0.98f);
             wheel_left.set_state(State::CCW);
 
             led = 0;
@@ -129,7 +129,7 @@ void wheel()
         wheel_right.set();
         wheel_left.set();
 
-        ThisThread::sleep_for(10ms);
+        ThisThread::sleep_for(1ms);
     }
 }
 
