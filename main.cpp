@@ -108,13 +108,13 @@ void wheel()
             wheel_right.set_duty_cycle(0.70f);
             wheel_right.set_state(State::CCW);
 
-            wheel_left.set_duty_cycle(0.50f);
+            wheel_left.set_duty_cycle(0.00f);
             wheel_left.set_state(State::CCW);
 
             led = 1;
             break;
         case 2:
-            wheel_right.set_duty_cycle(0.50f);
+            wheel_right.set_duty_cycle(0.00f);
             wheel_right.set_state(State::CCW);
 
             wheel_left.set_duty_cycle(0.70f);
