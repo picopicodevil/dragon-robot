@@ -14,8 +14,8 @@ void link()
     Timer timer;
     timer.start();
 
-    const float cycle_time = 5.0f;
-    const float reserve_time = 1.0f;
+    const float cycle_time = 3.0f;
+    const float reserve_time = 0.5f;
 
     bool is_push = false;
 
@@ -25,7 +25,7 @@ void link()
 
         // printf("%d\r", (int)elapsed_time);
 
-        constexpr float ccw_duty_cycle = 0.35f;
+        constexpr float ccw_duty_cycle = 0.70f;
 
         if (sw == 1)
         {
