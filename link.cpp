@@ -25,6 +25,8 @@ void link()
 
         // printf("%d\r", (int)elapsed_time);
 
+        constexpr float ccw_duty_cycle = 0.35f;
+
         if (sw == 1)
         {
             led = 1;
@@ -39,7 +41,7 @@ void link()
             }
             else
             {
-                motor.set_duty_cycle(0.98f);
+                motor.set_duty_cycle(ccw_duty_cycle);
                 motor.set_state(State::CCW);
                 motor.set();
             }
@@ -63,7 +65,7 @@ void link()
             }
             else
             {
-                motor.set_duty_cycle(0.50f);
+                motor.set_duty_cycle(ccw_duty_cycle);
                 motor.set_state(State::CCW);
                 motor.set();
             }
