@@ -19,7 +19,9 @@ void ball_screw()
 
     constexpr float duty_cycle = 0.98f;
 
-    bool is_rise = false;
+    constexpr float revolutions = 10.0f;
+
+    bool is_rise = true;
 
     while (1)
     {
@@ -42,7 +44,7 @@ void ball_screw()
             motor.set();
         }
 
-        if (fabsf(encoder.getRevolutions()) > 15.0f)
+        if (fabsf(encoder.getRevolutions()) > revolutions)
         {
             encoder.reset();
             is_rise = !is_rise;
