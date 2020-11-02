@@ -24,6 +24,9 @@ class RN4020: public BufferedSerial
     char _mac_address[13];
 
     int wait_until(const char *string);
+    void flush();
+
+    static constexpr float time_limit = 1000.0f;
 };
 
 #endif

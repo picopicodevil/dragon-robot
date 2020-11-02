@@ -9,11 +9,11 @@ class TB6643 : public Motor
 public:
     TB6643(PinName IN1, PinName IN2);
 
-    int set(Motor &motor);
+    int set();
 
 private:
-    DigitalOut _IN1;
-    DigitalOut _IN2;
+    PwmOut _IN1;
+    PwmOut _IN2;
 };
 
 #endif

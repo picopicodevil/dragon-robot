@@ -5,12 +5,13 @@
 RN4020::RN4020(PinName tx, PinName rx, int baud)
     :BufferedSerial(tx, rx, baud)
 {
-    wait_until("CMD");
 }
 
 int RN4020::set_mldp_central(const char *mac_address, const char *bit_pattern)
 {
     sync();
+
+    flush();
 
     // 初期化
     write("SF,1\n", 5);
@@ -50,6 +51,8 @@ int RN4020::set_mldp_central(const char *mac_address, const char *bit_pattern)
 int RN4020::set_mldp_peripheral(const char *bit_pattern)
 {
     sync();
+
+    flush();
 
     // 初期化
     write("SF,1\n", 5);
@@ -101,8 +104,11 @@ int RN4020::wait_until(const char *string)
 {
     int index = 0;
     char buffer[32];
-    // for (int i = 0; i < 100; i++)
-    while(true)
+
+    Timer t;
+    t.start();
+
+    while(std::chrono::duration<float>{t.elapsed_time()}.count() < time_limit)
     {
         if (readable())
         {
@@ -123,7 +129,16 @@ int RN4020::wait_until(const char *string)
                 }
             }
         }
-        ThisThread::sleep_for(100ms);
+        ThisThread::sleep_for(1ms);
     }
     return 0;
+}
+
+void RN4020::flush()
+{
+    while(readable())
+    {
+        char tmp;
+        read(&tmp, 1);
+    }
 }
