@@ -19,9 +19,9 @@ void ball_screw()
 
     constexpr float duty_cycle = 0.98f;
 
-    constexpr float revolutions = 10.0f;
+    constexpr float revolutions = 5.0f;
 
-    bool is_rise = true;
+    bool is_rise = false;
 
     while (1)
     {

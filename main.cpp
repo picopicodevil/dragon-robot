@@ -69,7 +69,7 @@ int main()
     Thread wheel_thread;
 
     link_thread.start(link);
-    // ball_screw_thread.start(ball_screw);
+    ball_screw_thread.start(ball_screw);
     wheel_thread.start(wheel);
 
     while (true)
@@ -96,8 +96,15 @@ void wheel()
 
     DigitalOut led(LED4);
 
+    constexpr float main_duty_cycle = 0.80f;
+    constexpr float sub_duty_cycle = 0.00f;
+
     while (1)
     {
+        // AnalogIn ain(p19);
+        // printf("%d\n", (int)(ain.read() * 100));
+
+        // ThisThread::sleep_for(100ms);
         int value = line_trace.read();
 
         switch (value)
@@ -105,19 +112,19 @@ void wheel()
         case 0:
             break;
         case 1:
-            wheel_right.set_duty_cycle(0.98f);
+            wheel_right.set_duty_cycle(main_duty_cycle);
             wheel_right.set_state(State::CCW);
 
-            wheel_left.set_duty_cycle(0.60f);
+            wheel_left.set_duty_cycle(sub_duty_cycle);
             wheel_left.set_state(State::CCW);
 
             led = 1;
             break;
         case 2:
-            wheel_right.set_duty_cycle(0.60f);
+            wheel_right.set_duty_cycle(sub_duty_cycle);
             wheel_right.set_state(State::CCW);
 
-            wheel_left.set_duty_cycle(0.98f);
+            wheel_left.set_duty_cycle(main_duty_cycle);
             wheel_left.set_state(State::CCW);
 
             led = 0;
